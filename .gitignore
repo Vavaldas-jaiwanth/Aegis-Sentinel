@@ -1,3 +1,25 @@
-# ignore all ini files
-*txt
-**/desktop.ini
+# Python Caches
+__pycache__/
+*.py[cod]
+
+# Executables (Do NOT upload test files like boy.exe to GitHub, they will flag your repo as malicious)
+*.exe
+*.dll
+
+# Large Datasets
+*.csv
+MalwareData.csv
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# OS / IDE Files
+.vscode/
+.idea/
+.DS_Store
+desktop.ini
+
+# NOTE: I am deliberately NOT ignoring your .pkl file so that your model 
+# actually gets uploaded to GitHub and people can run your scanner out-of-the-box!
