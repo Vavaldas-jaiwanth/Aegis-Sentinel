@@ -1,0 +1,8 @@
+{
+    "watch_paths": [
+        "C:/Users/vaval/Desktop/Test"
+    ],
+    "auto_start": true,
+    "scan_on_start": false,
+    "max_workers": 4
+}

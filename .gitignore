@@ -21,5 +21,12 @@ env/
 .DS_Store
 desktop.ini
 
-# NOTE: I am deliberately NOT ignoring your .pkl file so that your model 
-# actually gets uploaded to GitHub and people can run your scanner out-of-the-box!
+# Build Artifacts
+build/
+dist/
+malware_defender.spec
+
+# Project Specific
+models/
+cache/
+test_samples/
