@@ -68,7 +68,7 @@
 * **Reliability**: Errors during feature extraction or scanning of corrupted files are caught and logged without crashing the background daemon.
 * **Security**: The system operates 100% locally. No files or hashes are sent over the internet, preserving enterprise privacy.
 * **Maintainability**: The `engine/extractors/dispatcher.py` uses a Factory/Strategy pattern to decouple feature extraction logic by file type.
-* **Performance**: The 127MB LightGBM model is loaded via a Singleton pattern (`model_loader.py`). File caching via SHA-256 (`hasher.py`) prevents re-scanning unmodified files. Hashes are computed in 4MB chunks to prevent memory bloat on large files.
+* **Performance**: The 127MB LightGBM model is loaded via a Singleton pattern (`engine/ml/model_loader.py`). File caching via SHA-256 (`engine/utils/hasher.py`) prevents re-scanning unmodified files. Hashes are computed in 4MB chunks to prevent memory bloat on large files.
 * **Availability**: Designed to run as a continuous background daemon (`protect` mode) that gracefully handles keyboard interrupts.
 
 ---
@@ -110,7 +110,7 @@ MalwareDetect/
 
 * **Architecture Style**: Layered / Modular architecture with elements of Event-Driven design (for the watcher daemon).
 * **Why chosen**: Separation of concerns. The ML logic is completely decoupled from the UI and CLI, allowing for multiple interfaces (Streamlit and Argparse).
-* **Benefits**: Highly testable, maintainable, and extensible (e.g., adding a new file type only requires adding a new file in `features/` and updating the dispatcher).
+* **Benefits**: Highly testable, maintainable, and extensible (e.g., adding a new file type only requires adding a new file in `engine/extractors/` and updating the dispatcher).
 * **Limitations**: The current event-driven watcher uses ThreadPools which are bound by Python's Global Interpreter Lock (GIL). For heavy CPU-bound feature extraction, this could become a bottleneck.
 
 ### Architecture Diagram
@@ -129,15 +129,15 @@ graph TD
     Watcher --> ThreadPool[ThreadPoolExecutor]
     ThreadPool --> Scanner
     
-    Scanner --> Dispatcher[features/dispatcher.py]
-    Dispatcher --> Extractors[pe_features]
+    Scanner --> Dispatcher[engine/extractors/dispatcher.py]
+    Dispatcher --> Extractors[pe_parser]
     
-    Scanner --> ModelLoader[model_loader.py]
+    Scanner --> ModelLoader[engine/ml/model_loader.py]
     ModelLoader --> Model[ember_model_2018.txt]
     
-    Scanner --> Explainer[explain.py]
-    Scanner --> Hasher[hasher.py]
-    Scanner --> Logger[logger.py]
+    Scanner --> Explainer[engine/ml/explain.py]
+    Scanner --> Hasher[engine/utils/hasher.py]
+    Scanner --> Logger[engine/utils/logger.py]
     
     Logger --> Cache[data/cache/scan_logs.json]
 ```
@@ -229,7 +229,7 @@ classDiagram
 
 ## 10. API Documentation (Internal Modules)
 
-### `scanner.py::scan_file`
+### `engine/scanner.py::scan_file`
 * **Purpose**: Main entrypoint for file analysis.
 * **Arguments**: `file_path` (str), `explain` (bool)
 * **Response DTO**:
@@ -255,8 +255,8 @@ classDiagram
 * **Backend Flow**:
   1. `watchdog` detects file creation.
   2. The `FileHandler` receives the event and debounces it using `time.sleep(1.5)` (allows large downloads to finish).
-  3. Hash is computed via `hasher.py`.
-  4. Cache is checked via `logger.py`. If cached, execution halts.
+  3. Hash is computed via `engine/utils/hasher.py`.
+  4. Cache is checked via `engine/utils/logger.py`. If cached, execution halts.
   5. The scan is dispatched to a `ThreadPoolExecutor`.
 * **Security Considerations**: The sleep timer is a potential race condition vulnerability. Advanced malware could execute within that 1.5-second window before the scan finishes.
 * **Tradeoffs**: Polling vs Event-driven. Event-driven consumes almost 0 CPU until an event occurs. ThreadPools allow concurrent scanning of multiple downloaded files.
@@ -309,13 +309,13 @@ sequenceDiagram
 
 ## 14. Design Patterns
 
-1. **Singleton (`model_loader.py`)**
+1. **Singleton (`engine/ml/model_loader.py`)**
    * *Location*: `get_model()` uses `global _model_instance`.
    * *Purpose*: The LightGBM model is 127MB. Loading it into memory takes 1-2 seconds. The singleton ensures it is loaded exactly once for the entire lifecycle of the application.
-2. **Strategy / Factory (`dispatcher.py`)**
+2. **Strategy / Factory (`engine/extractors/dispatcher.py`)**
    * *Location*: `extract_features()`.
    * *Purpose*: Decouples the scanning engine from the specific file format parsing logic.
-3. **Facade (`scanner.py`)**
+3. **Facade (`engine/scanner.py`)**
    * *Location*: `scan_file()`.
    * *Purpose*: Hides the complexity of feature extraction, model loading, predicting, thresholding, and SHAP logic behind one simple function call.
 
@@ -325,7 +325,7 @@ sequenceDiagram
 
 * **Expensive Operations**:
   1. Parsing large PE (Portable Executable) files.
-* **Memory Concerns**: Reading a 5GB ISO file to memory would crash the app. The `hasher.py` mitigates this via 4MB chunking. However, feature extractors must also be written to handle large files efficiently.
+* **Memory Concerns**: Reading a 5GB ISO file to memory would crash the app. The `engine/utils/hasher.py` mitigates this via 4MB chunking. However, feature extractors must also be written to handle large files efficiently.
 * **Optimizations Suggested**: Convert JSON log file to SQLite. If the JSON file grows to 100,000 entries, parsing the entire JSON string into a Python dict on every scan will cause massive I/O lag.
 
 ---
@@ -425,12 +425,12 @@ Upon completion, PyInstaller will create a `dist/malware_defender/` directory co
    * *Mistake*: Saying LightGBM is always more accurate.
 
 2. **How do you handle memory when hashing a 10GB ISO file?**
-   * *Ideal Answer*: I implemented chunking in `hasher.py`. Using a generator `iter(lambda: f.read(4096 * 1024), b"")`, I read the file in 4MB blocks and update the SHA-256 object, maintaining a flat memory profile.
+   * *Ideal Answer*: I implemented chunking in `engine/utils/hasher.py`. Using a generator `iter(lambda: f.read(4096 * 1024), b"")`, I read the file in 4MB blocks and update the SHA-256 object, maintaining a flat memory profile.
 
 3. **What is the Global Interpreter Lock (GIL) and how does it affect your ThreadPoolExecutor?**
    * *Ideal Answer*: The GIL prevents multiple native threads from executing Python bytecodes at once. While the ThreadPool helps with I/O bound tasks (like reading files), the CPU-bound feature extraction is bottlenecked. However, LightGBM releases the GIL during `predict()`, so the actual ML inference runs in true parallel.
 
-4. **Why did you use the Strategy/Factory pattern in `dispatcher.py`?**
+4. **Why did you use the Strategy/Factory pattern in `engine/extractors/dispatcher.py`?**
    * *Ideal Answer*: Open/Closed Principle. It allows me to add support for new file types (like ELF or Mach-O) by creating a new class and adding one line to the dispatcher, without modifying the core scanner logic.
 
 5. **How do you handle race conditions when writing to the JSON log file?**
@@ -442,11 +442,11 @@ Upon completion, PyInstaller will create a `dist/malware_defender/` directory co
 7. **Explain the TOCTOU (Time of Check to Time of Use) vulnerability in your watcher.**
    * *Ideal Answer*: Because I use a user-space watchdog with a 1.5-second sleep to wait for downloads to finish, malware could theoretically be executed by a user or script in that 1.5-second window before the scanner finishes and flags it. 
    
-8. **How does your `model_loader.py` implement Singleton?**
+8. **How does your `engine/ml/model_loader.py` implement Singleton?**
    * *Ideal Answer*: It checks if a global `_model_instance` variable is None. If so, it loads the model from disk and assigns it. Subsequent calls return the loaded instance in memory.
 
 9. **What happens if `settings.json` is corrupted?**
-   * *Ideal Answer*: `config.py` catches the `JSONDecodeError`, falls back to a hardcoded `DEFAULT_CONFIG` dictionary, and attempts to overwrite the corrupted file with the defaults, ensuring the app doesn't crash on boot.
+   * *Ideal Answer*: `engine/utils/config.py` catches the `JSONDecodeError`, falls back to a hardcoded `DEFAULT_CONFIG` dictionary, and attempts to overwrite the corrupted file with the defaults, ensuring the app doesn't crash on boot.
 
 10. **Why did you choose a 0.8336 threshold for LightGBM?**
     * *Ideal Answer*: Based on the EMBER 2018 dataset analysis, 0.8336 is the mathematically optimal threshold on the ROC curve to achieve a strict 1% False Positive Rate, which is critical in enterprise environments to prevent deleting legitimate business files.
