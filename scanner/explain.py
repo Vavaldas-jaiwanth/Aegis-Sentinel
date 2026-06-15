@@ -1,4 +1,4 @@
-import shap
+
 import numpy as np
 
 def get_ember_feature_name(index: int) -> str:
@@ -28,26 +28,18 @@ def get_ember_feature_name(index: int) -> str:
 
 def explain_prediction(features: list, model) -> dict:
     """
-    Uses SHAP to explain why the LightGBM model made its prediction across 2381 features.
+    Uses LightGBM's native pred_contrib to explain why the model made its prediction across 2381 features.
     Returns the top contributing feature categories and their impact scores.
     """
     try:
-        # We use TreeExplainer because it is highly optimized for LightGBM
-        explainer = shap.TreeExplainer(model)
+        # Instead of using the memory-heavy `shap` python package which tries to dump the 127MB model
+        # to JSON and crashes, we use LightGBM's blazing fast native C++ pred_contrib function!
+        # This returns an array where the last element is the base expected value
+        # and the remaining elements are the exact SHAP values.
+        contribs = model.predict(np.array([features]), pred_contrib=True)[0]
         
-        # Calculate SHAP values for the single input feature vector
-        shap_values_raw = explainer.shap_values(np.array([features]))
-        
-        # Handle different SHAP output formats (binary classification vs regression)
-        if isinstance(shap_values_raw, list):
-            # Binary classification usually returns a list [class_0_shap, class_1_shap]
-            shap_values = shap_values_raw[1][0]
-        elif len(shap_values_raw.shape) == 3:
-             # Some newer shap versions output (n_samples, n_features, n_classes)
-             shap_values = shap_values_raw[0, :, 1]
-        else:
-            # Single array output
-            shap_values = shap_values_raw[0]
+        # The first len(features) elements are the SHAP feature contributions
+        shap_values = contribs[:-1]
             
         # Dynamically map the highest impact indices
         feature_impacts = []

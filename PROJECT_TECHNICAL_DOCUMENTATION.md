@@ -7,8 +7,8 @@
 * **Problem Statement**: Traditional signature-based antivirus solutions are ineffective against zero-day threats and polymorphic malware. This project solves this by using AI to detect malicious intent based on file heuristics and metadata.
 * **Business Use Case**: Protecting enterprise endpoints from ransomware, trojans, and zero-day attacks without relying on internet-connected signature updates.
 * **Target Users**: Enterprise security teams, SOC analysts, and system administrators.
-* **Key Functionalities**: Single file scanning (CLI/UI), bulk folder scanning, background real-time protection (watchdog), AI decision explainability (SHAP), and caching for performance.
-* **Technology Stack**: Python, LightGBM (EMBER 2018 model), Streamlit, SHAP, Watchdog.
+* **Key Functionalities**: Single file scanning (CLI/UI), bulk folder scanning, background real-time protection (watchdog), AI decision explainability (LightGBM native SHAP), and caching for performance.
+* **Technology Stack**: Python, LightGBM (EMBER 2018 model), Streamlit, Watchdog.
 * **High-Level Architecture Summary**: A modular architecture consisting of a Presentation Layer (Streamlit UI, Argparse CLI), a Business Logic Layer (Real-time Watchdog, Batch Scanner), and an AI/Feature Extraction Layer (LightGBM, PE/ZIP parsers) backed by a local JSON cache.
 ---
 
@@ -33,8 +33,8 @@
 2. **Feature Name**: AI Explainability
    * **Description**: Explain why the AI flagged a file.
    * **User Interaction**: Add `--explain` flag or check UI box.
-   * **Backend Processing**: SHAP TreeExplainer calculates feature impacts.
-   * **Data Involved**: Extracted feature vector, SHAP values.
+   * **Backend Processing**: LightGBM native `pred_contrib` calculates feature impacts.
+   * **Data Involved**: Extracted feature vector, native SHAP values.
 
 3. **Feature Name**: Real-Time Background Protection
    * **Description**: Monitor configured directories for new files.
@@ -53,6 +53,12 @@
    * **User Interaction**: CLI (`main.py config --add-path ...`).
    * **Backend Processing**: Read/Write `settings.json`.
    * **Data Involved**: JSON configuration object.
+
+6. **Feature Name**: Desktop Agent Download
+   * **Description**: Allows users to download the compiled standalone background agent directly from the web dashboard.
+   * **User Interaction**: Click the download button in the Streamlit sidebar.
+   * **Backend Processing**: Serves the pre-compiled `MalwareDefender_Agent.zip` from the local `dist` folder.
+   * **Data Involved**: ZIP binary payload.
 
 ---
 
@@ -80,7 +86,7 @@ MalwareDetect/
 │   └── scan_logs.json          # Data: Local caching and scan history
 ├── scanner/                    # Business & ML Logic
 │   ├── config.py               # Settings manager
-│   ├── explain.py              # SHAP TreeExplainer integration
+│   ├── explain.py              # LightGBM native explainability
 │   ├── folder_scanner.py       # Parallel recursive directory scanner
 │   ├── hasher.py               # Memory-efficient SHA-256 generator
 │   ├── logger.py               # Cache reading/writing
@@ -150,10 +156,10 @@ graph TD
 * **Alternatives**: XGBoost, Random Forest, Deep Neural Networks.
 * **Tradeoffs**: Less capable of analyzing sequential raw bytes (where CNNs/LSTMs shine), but dramatically faster and requires less compute power.
 
-### SHAP (SHapley Additive exPlanations)
+### Native Explainability (pred_contrib)
 * **Purpose**: AI Decision Explainability.
-* **Why used**: State-of-the-art technique to unbox "black-box" ML models by calculating feature contributions.
-* **Tradeoffs**: Computationally expensive, which is why it is hidden behind an `--explain` flag.
+* **Why used**: Replaced the heavy, bug-prone Python `shap` library with LightGBM's native C++ `pred_contrib` functionality. It calculates exact SHAP feature contributions locally without JSON serialization or high memory overhead.
+* **Tradeoffs**: Negligible compute cost compared to external explainer libraries. Hidden behind an `--explain` flag to keep standard scans absolutely minimal.
 
 ### Streamlit
 * **Purpose**: Enterprise Web Dashboard.
@@ -257,8 +263,8 @@ classDiagram
 
 ### AI Decision Explainability
 * **Purpose**: SOC analysts need to know *why* a file was blocked.
-* **Backend Flow**: SHAP `TreeExplainer` processes the 2381-feature vector. A custom mapper (`get_ember_feature_name`) translates raw indices into human-readable categories (e.g., "Section Properties", "Imports").
-* **Why This Implementation**: Security practitioners do not trust black boxes. SHAP provides mathematical proof of which features tipped the model's decision boundary.
+* **Backend Flow**: LightGBM's `predict(pred_contrib=True)` processes the 2381-feature vector natively in C++. A custom mapper (`get_ember_feature_name`) translates raw indices into human-readable categories (e.g., "Section Properties", "Imports").
+* **Why This Implementation**: Security practitioners do not trust black boxes. Generating SHAP feature contributions natively provides mathematical proof of which features tipped the model's decision boundary without requiring external heavy dependencies.
 
 ---
 
@@ -318,8 +324,7 @@ sequenceDiagram
 ## 15. Performance Analysis
 
 * **Expensive Operations**:
-  1. SHAP TreeExplainer calculation.
-  2. Parsing large PE (Portable Executable) files.
+  1. Parsing large PE (Portable Executable) files.
 * **Memory Concerns**: Reading a 5GB ISO file to memory would crash the app. The `hasher.py` mitigates this via 4MB chunking. However, feature extractors must also be written to handle large files efficiently.
 * **Optimizations Suggested**: Convert JSON log file to SQLite. If the JSON file grows to 100,000 entries, parsing the entire JSON string into a Python dict on every scan will cause massive I/O lag.
 
@@ -458,9 +463,9 @@ Upon completion, PyInstaller will create a `dist/malware_defender/` directory co
 * **Interview Concept**: Event-driven programming, ThreadPooling, debouncing (time.sleep).
 
 ### `scanner/explain.py`
-* **Purpose**: SHAP integration.
+* **Purpose**: Native LightGBM Explainability.
 * **Key Methods**: `explain_prediction()`.
-* **Interview Concept**: Model interpretability. Note the handling of different SHAP array shapes depending on the library version (binary vs regression outputs).
+* **Interview Concept**: Model interpretability and dependency minimization. Bypassing heavy Python wrappers to use native C++ backend features (`pred_contrib=True`) for massive performance gains and memory safety.
 
 ### `main.py`
 * **Purpose**: CLI routing.
@@ -469,5 +474,5 @@ Upon completion, PyInstaller will create a `dist/malware_defender/` directory co
 
 ### `app.py`
 * **Purpose**: Streamlit dashboard.
-* **Key Methods**: Uses `tempfile.NamedTemporaryFile` to securely save uploaded browser chunks to disk before scanning.
-* **Interview Concept**: Web file handling, temporary file lifecycle management and cleanup (`os.unlink` in a `finally` block).
+* **Key Methods**: Uses `tempfile.NamedTemporaryFile` to securely save uploaded browser chunks to disk before scanning. Implements `st.download_button` to serve the compiled Desktop Agent ZIP file from the sidebar.
+* **Interview Concept**: Web file handling, serving static binaries via Streamlit, temporary file lifecycle management and cleanup (`os.unlink` in a `finally` block).
