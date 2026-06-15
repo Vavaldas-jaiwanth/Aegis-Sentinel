@@ -4,9 +4,9 @@ import streamlit as st
 import sys
 import json
 
-# Add the scanner folder to the path so we can import our modules
-sys.path.append(os.path.join(os.path.dirname(__file__), 'scanner'))
-from scanner import scan_file
+# Add root to sys.path so we can import engine
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from engine.scanner import scan_file
 
 # Page config for a modern, dark-themed enterprise look
 st.set_page_config(page_title="Enterprise Malware Scanner", page_icon="🛡️", layout="centered")
@@ -31,7 +31,7 @@ st.markdown("---")
 st.sidebar.title("💻 Desktop Agent")
 st.sidebar.write("Protect your local endpoint in real-time with our background agent.")
 
-agent_zip_path = os.path.join(os.path.dirname(__file__), "dist", "MalwareDefender_Agent.zip")
+agent_zip_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dist", "MalwareDefender_Agent.zip")
 
 if os.path.exists(agent_zip_path):
     with open(agent_zip_path, "rb") as f:

@@ -4,9 +4,9 @@ import concurrent.futures
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-from .scanner import scan_file
-from .hasher import compute_hash
-from .logger import load_logs, update_log
+from engine.scanner import scan_file
+from engine.utils.hasher import compute_hash
+from engine.utils.logger import load_logs, update_log
 
 class FileHandler(FileSystemEventHandler):
     def __init__(self):

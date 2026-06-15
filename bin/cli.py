@@ -2,9 +2,12 @@ import argparse
 import os
 import sys
 
-from scanner.scanner import scan_file
-from scanner.folder_scanner import scan_folder
-from scanner.watcher import start_watcher
+# Add root to sys.path so we can import engine
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from engine.scanner import scan_file
+from engine.folder_scanner import scan_folder
+from engine.watcher import start_watcher
 
 def main():
     parser = argparse.ArgumentParser(description="Next-Gen Malware Scanning Engine")
@@ -109,8 +112,8 @@ def main():
     # ROUTE: Protect (Agent Mode)
     # ==========================
     elif args.command == "protect":
-        from scanner.config import load_config, get_watch_paths, should_scan_on_start
-        import scanner.config as config
+        from engine.utils.config import load_config, get_watch_paths, should_scan_on_start
+        import engine.utils.config as config
         
         if args.config:
             config.CONFIG_FILE = args.config
@@ -140,7 +143,7 @@ def main():
     # ROUTE: Config (Modify Settings)
     # ==========================
     elif args.command == "config":
-        from scanner.config import load_config, save_config
+        from engine.utils.config import load_config, save_config
         import json
         
         config = load_config()

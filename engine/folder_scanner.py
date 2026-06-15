@@ -1,8 +1,8 @@
 import os
 import concurrent.futures
-from .hasher import compute_hash
-from .logger import load_logs, update_log
-from .scanner import scan_file
+from engine.utils.hasher import compute_hash
+from engine.utils.logger import load_logs, update_log
+from engine.scanner import scan_file
 
 def scan_wrapper(file_path):
     """

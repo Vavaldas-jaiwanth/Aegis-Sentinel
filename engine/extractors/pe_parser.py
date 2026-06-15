@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from typing import List
-from .base import FeatureExtractor
+from engine.extractors.base import FeatureExtractor
 
 class PEFeatureExtractor(FeatureExtractor):
     def extract(self, file_path: str) -> List[float]:

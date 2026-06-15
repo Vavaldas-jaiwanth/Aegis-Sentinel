@@ -1,6 +1,6 @@
 import os
 from typing import List
-from .pe_features import PEFeatureExtractor
+from engine.extractors.pe_parser import PEFeatureExtractor
 
 def extract_features(file_path: str) -> List[float]:
     """

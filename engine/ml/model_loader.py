@@ -16,10 +16,10 @@ def get_model(model_path: str = 'ember_model_2018.txt'):
             # If PyInstaller packaged, use the executable's directory
             base_dir = os.path.dirname(sys.executable)
         else:
-            # If standard python, use the project root (parent of scanner folder)
-            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            # If standard python, use the project root
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             
-        full_path = os.path.join(base_dir, 'models', model_path)
+        full_path = os.path.join(base_dir, 'data', 'models', model_path)
         
         if not os.path.exists(full_path):
             raise FileNotFoundError(f"EMBER Model file not found at {full_path}. Please extract it from the tarball.")

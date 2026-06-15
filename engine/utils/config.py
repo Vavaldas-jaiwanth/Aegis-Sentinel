@@ -12,7 +12,7 @@ def get_base_dir():
         return os.path.dirname(sys.executable)
     else:
         # If running from source, look in the project root
-        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 CONFIG_FILE = os.path.join(get_base_dir(), "settings.json")
 

@@ -3,8 +3,8 @@ import warnings
 import zipfile
 import tempfile
 import shutil
-from .features import extract_features
-from .model_loader import get_model
+from engine.extractors import extract_features
+from engine.ml.model_loader import get_model
 
 # Suppress sklearn warnings about feature names since we pass raw vectors directly
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
@@ -36,7 +36,7 @@ def _scan_single_pe(file_path: str, explain: bool = False) -> dict:
     
     # 4. Explain (Optional)
     if explain:
-        from .explain import explain_prediction
+        from engine.ml.explain import explain_prediction
         explanation = explain_prediction(features_vector, model)
         if "error" not in explanation:
             result["explanation"] = explanation["top_features"]

@@ -26,7 +26,7 @@
 
 1. **Feature Name**: Single File AI Scan
    * **Description**: Scan a specific file and get a confidence score.
-   * **User Interaction**: CLI (`main.py scan -f file.exe`) or Streamlit UI.
+   * **User Interaction**: CLI (`bin/cli.py scan -f file.exe`) or Streamlit UI.
    * **Backend Processing**: Feature extraction -> LightGBM predict.
    * **Data Involved**: Target executable, ML model.
 
@@ -38,19 +38,19 @@
 
 3. **Feature Name**: Real-Time Background Protection
    * **Description**: Monitor configured directories for new files.
-   * **User Interaction**: Run `main.py protect`.
+   * **User Interaction**: Run `bin/cli.py protect`.
    * **Backend Processing**: Watchdog events -> Hash -> Cache Check -> Background Thread Scan.
    * **Data Involved**: File system events, SHA-256 hashes, JSON logs.
 
 4. **Feature Name**: Bulk Folder Scanning
    * **Description**: Recursively scan a directory.
-   * **User Interaction**: CLI (`main.py scan -d /path/`).
+   * **User Interaction**: CLI (`bin/cli.py scan -d /path/`).
    * **Backend Processing**: Directory walk -> ThreadPoolExecutor -> Batch prediction.
    * **Data Involved**: Multiple files, parallel I/O.
 
 5. **Feature Name**: Configuration Management
    * **Description**: Manage settings like watch paths.
-   * **User Interaction**: CLI (`main.py config --add-path ...`).
+   * **User Interaction**: CLI (`bin/cli.py config --add-path ...`).
    * **Backend Processing**: Read/Write `settings.json`.
    * **Data Involved**: JSON configuration object.
 
@@ -67,7 +67,7 @@
 * **Scalability**: Handled via `concurrent.futures.ThreadPoolExecutor` in both `watcher.py` and `folder_scanner.py`. The system scales worker threads dynamically based on CPU cores.
 * **Reliability**: Errors during feature extraction or scanning of corrupted files are caught and logged without crashing the background daemon.
 * **Security**: The system operates 100% locally. No files or hashes are sent over the internet, preserving enterprise privacy.
-* **Maintainability**: The `scanner/features/dispatcher.py` uses a Factory/Strategy pattern to decouple feature extraction logic by file type.
+* **Maintainability**: The `engine/extractors/dispatcher.py` uses a Factory/Strategy pattern to decouple feature extraction logic by file type.
 * **Performance**: The 127MB LightGBM model is loaded via a Singleton pattern (`model_loader.py`). File caching via SHA-256 (`hasher.py`) prevents re-scanning unmodified files. Hashes are computed in 4MB chunks to prevent memory bloat on large files.
 * **Availability**: Designed to run as a continuous background daemon (`protect` mode) that gracefully handles keyboard interrupts.
 
@@ -77,14 +77,14 @@
 
 ```
 MalwareDetect/
-├── app.py                      # Presentation: Streamlit Web Dashboard
-├── main.py                     # Presentation: Main CLI Entry Point
+├── bin/dashboard.py                      # Presentation: Streamlit Web Dashboard
+├── bin/cli.py                     # Presentation: Main CLI Entry Point
 ├── settings.json               # Configuration: User settings
-├── models/
+├── data/models/
 │   └── ember_model_2018.txt    # Data: Pre-trained LightGBM Model
-├── cache/
+├── data/cache/
 │   └── scan_logs.json          # Data: Local caching and scan history
-├── scanner/                    # Business & ML Logic
+├── engine/                    # Business & ML Logic
 │   ├── config.py               # Settings manager
 │   ├── explain.py              # LightGBM native explainability
 │   ├── folder_scanner.py       # Parallel recursive directory scanner
@@ -100,8 +100,8 @@ MalwareDetect/
 ```
 
 * **Presentation Layer**: Exposes the functionality to users (CLI/Web).
-* **Business Logic Layer (`scanner/`)**: Orchestrates the scanning, caching, and background monitoring.
-* **Feature Extraction Layer (`scanner/features/`)**: Translates raw bytes into mathematical vectors.
+* **Business Logic Layer (`engine/`)**: Orchestrates the scanning, caching, and background monitoring.
+* **Feature Extraction Layer (`engine/extractors/`)**: Translates raw bytes into mathematical vectors.
 * **Data Access Layer**: Manages the JSON cache and configurations.
 
 ---
@@ -117,8 +117,8 @@ MalwareDetect/
 
 ```mermaid
 graph TD
-    Client[User] --> CLI[main.py]
-    Client --> WebUI[app.py]
+    Client[User] --> CLI[bin/cli.py]
+    Client --> WebUI[bin/dashboard.py]
     
     CLI --> Scanner[scanner.py]
     CLI --> Watcher[watcher.py]
@@ -139,7 +139,7 @@ graph TD
     Scanner --> Hasher[hasher.py]
     Scanner --> Logger[logger.py]
     
-    Logger --> Cache[cache/scan_logs.json]
+    Logger --> Cache[data/cache/scan_logs.json]
 ```
 
 ---
@@ -177,7 +177,7 @@ graph TD
 
 The system uses a lightweight NoSQL approach (JSON File) to avoid the overhead of setting up a relational database for a local endpoint agent.
 
-### Entity: Scan Log (`cache/scan_logs.json`)
+### Entity: Scan Log (`data/cache/scan_logs.json`)
 * **Key**: SHA-256 File Hash (String)
 * **Value**: Object containing:
   * `file_path` (String)
@@ -251,7 +251,7 @@ classDiagram
 
 ### Background Agent (Protect Mode)
 * **Purpose**: Prevent malware execution by detecting it the moment it touches the disk.
-* **User Flow**: User runs `main.py protect`. The app loads `settings.json`, does an initial sweep of the folders, and attaches OS hooks.
+* **User Flow**: User runs `bin/cli.py protect`. The app loads `settings.json`, does an initial sweep of the folders, and attaches OS hooks.
 * **Backend Flow**:
   1. `watchdog` detects file creation.
   2. The `FileHandler` receives the event and debounces it using `time.sleep(1.5)` (allows large downloads to finish).
@@ -279,7 +279,7 @@ sequenceDiagram
     participant ModelLoader
     participant Explainer
     
-    User->>CLI: main.py scan -f bad.exe --explain
+    User->>CLI: bin/cli.py scan -f bad.exe --explain
     CLI->>Scanner: scan_file("bad.exe", True)
     Scanner->>Dispatcher: extract_features()
     Dispatcher-->>Scanner: Vector [2381 floats]
@@ -357,7 +357,7 @@ sequenceDiagram
 
 ## 19. Configuration Analysis
 
-* **File**: `settings.json` managed via `scanner/config.py`.
+* **File**: `settings.json` managed via `engine/utils/config.py`.
 * **Resilience**: If the JSON is corrupted or deleted, `load_config()` falls back to a hardcoded `DEFAULT_CONFIG` dictionary and recreates the file. This ensures the daemon never fails to start due to missing configs.
 
 ---
@@ -457,22 +457,22 @@ Upon completion, PyInstaller will create a `dist/malware_defender/` directory co
 
 ## 25. Source Code Walkthrough
 
-### `scanner/watcher.py`
+### `engine/watcher.py`
 * **Purpose**: Background daemon for real-time protection.
 * **Key Methods**: `queue_file()`, `process_file_background()`.
 * **Interview Concept**: Event-driven programming, ThreadPooling, debouncing (time.sleep).
 
-### `scanner/explain.py`
+### `engine/ml/explain.py`
 * **Purpose**: Native LightGBM Explainability.
 * **Key Methods**: `explain_prediction()`.
 * **Interview Concept**: Model interpretability and dependency minimization. Bypassing heavy Python wrappers to use native C++ backend features (`pred_contrib=True`) for massive performance gains and memory safety.
 
-### `main.py`
+### `bin/cli.py`
 * **Purpose**: CLI routing.
 * **Key Methods**: Uses `argparse` with `subparsers` to route logic.
 * **Interview Concept**: CLI design, application lifecycle management.
 
-### `app.py`
+### `bin/dashboard.py`
 * **Purpose**: Streamlit dashboard.
 * **Key Methods**: Uses `tempfile.NamedTemporaryFile` to securely save uploaded browser chunks to disk before scanning. Implements `st.download_button` to serve the compiled Desktop Agent ZIP file from the sidebar.
 * **Interview Concept**: Web file handling, serving static binaries via Streamlit, temporary file lifecycle management and cleanup (`os.unlink` in a `finally` block).

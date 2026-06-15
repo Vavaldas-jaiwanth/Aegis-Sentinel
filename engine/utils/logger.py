@@ -6,10 +6,10 @@ from datetime import datetime
 def get_base_dir():
     if getattr(sys, 'frozen', False):
         return os.path.dirname(sys.executable)
-    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Place the log file in the cache directory at the project root
-LOG_FILE = os.path.join(get_base_dir(), "cache", "scan_logs.json")
+LOG_FILE = os.path.join(get_base_dir(), "data", "cache", "scan_logs.json")
 
 def load_logs() -> dict:
     """
