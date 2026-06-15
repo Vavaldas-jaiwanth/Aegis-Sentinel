@@ -30,3 +30,4 @@ malware_defender.spec
 data/models/
 data/cache/
 test_samples/
+!data/models/ember_model_2018.txt
