@@ -28,7 +28,7 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 st.markdown("---")
 
 # Expand supported types to match our Phase 7 modular dispatcher!
-supported_types = ['exe', 'dll', 'sys', 'bat', 'ps1', 'vbs', 'js', 'txt', 'zip']
+supported_types = ['exe', 'dll', 'sys', 'zip']
 uploaded_file = st.file_uploader(label='Upload Suspicious File', type=supported_types)
 
 # Optional Explainability

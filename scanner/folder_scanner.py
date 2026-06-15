@@ -46,7 +46,7 @@ def scan_folder(folder_path: str) -> None:
     # Collect all executable file paths
     file_paths = []
     for root, _, files in os.walk(folder_path):
-        supported_extensions = ['.exe', '.dll', '.sys', '.bat', '.ps1', '.vbs', '.js', '.txt', '.zip']
+        supported_extensions = ['.exe', '.dll', '.sys', '.zip']
         for file in files:
             _, ext = os.path.splitext(file.lower())
             if ext in supported_extensions:

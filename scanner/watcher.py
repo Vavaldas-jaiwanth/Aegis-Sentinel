@@ -86,7 +86,7 @@ class FileHandler(FileSystemEventHandler):
             return
             
         file_path = event.src_path
-        supported_extensions = ('.exe', '.dll', '.sys', '.bat', '.ps1', '.vbs', '.js', '.txt', '.zip')
+        supported_extensions = ('.exe', '.dll', '.sys', '.zip')
         if not file_path.lower().endswith(supported_extensions):
             return
             
@@ -97,7 +97,7 @@ class FileHandler(FileSystemEventHandler):
             return
             
         file_path = event.dest_path
-        supported_extensions = ('.exe', '.dll', '.sys', '.bat', '.ps1', '.vbs', '.js', '.txt', '.zip')
+        supported_extensions = ('.exe', '.dll', '.sys', '.zip')
         if not file_path.lower().endswith(supported_extensions):
             return
             
