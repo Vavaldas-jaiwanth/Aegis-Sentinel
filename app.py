@@ -13,7 +13,7 @@ st.set_page_config(page_title="Enterprise Malware Scanner", page_icon="🛡️",
 
 st.title('🛡️ Enterprise AI Malware Scanner')
 st.markdown('### Powered by the EMBER Machine Learning Engine')
-st.write('Upload an executable, script, or archive file. Our state-of-the-art LightGBM AI model analyzes 2,351 microscopic features to instantly determine if the file contains malware, ransomware, or malicious payloads.')
+st.write('Upload an executable or archive file. Our state-of-the-art LightGBM AI model analyzes 2,351 microscopic features to instantly determine if the file contains malware, ransomware, or malicious payloads.')
 
 # Hide default Streamlit styling to make it look like a standalone app
 hide_streamlit_style = """
@@ -26,6 +26,24 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 st.markdown("---")
+
+# Create sidebar for Desktop Agent download
+st.sidebar.title("💻 Desktop Agent")
+st.sidebar.write("Protect your local endpoint in real-time with our background agent.")
+
+agent_zip_path = os.path.join(os.path.dirname(__file__), "dist", "MalwareDefender_Agent.zip")
+
+if os.path.exists(agent_zip_path):
+    with open(agent_zip_path, "rb") as f:
+        st.sidebar.download_button(
+            label="📥 Download Desktop Agent (ZIP)",
+            data=f,
+            file_name="MalwareDefender_Agent.zip",
+            mime="application/zip",
+            help="Contains the standalone executable and the bundled ML models."
+        )
+else:
+    st.sidebar.warning("Desktop agent build not found. Run `pyinstaller malware_defender.spec` to generate it.")
 
 # Expand supported types to match our Phase 7 modular dispatcher!
 supported_types = ['exe', 'dll', 'sys', 'zip']
