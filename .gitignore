@@ -24,7 +24,6 @@ desktop.ini
 # Build Artifacts
 build/
 dist/
-malware_defender.spec
 
 # Project Specific
 data/models/
