@@ -31,19 +31,25 @@ st.markdown("---")
 st.sidebar.title("💻 Desktop Agent")
 st.sidebar.write("Protect your local endpoint in real-time with our background agent.")
 
-agent_zip_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dist", "MalwareDefender_Agent.zip")
+st.sidebar.markdown("""
+### 📥 Download Latest Version
+If you are viewing this on the cloud, download the compiled Windows executable directly from our GitHub Releases:
 
+[**Download MalwareDefender_Agent.zip**](https://github.com/YOUR_USERNAME/MalwareDetect/releases/latest)
+""")
+
+agent_zip_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dist", "MalwareDefender_Agent.zip")
 if os.path.exists(agent_zip_path):
+    st.sidebar.markdown("---")
+    st.sidebar.write("*Local Development Build Detected:*")
     with open(agent_zip_path, "rb") as f:
         st.sidebar.download_button(
-            label="📥 Download Desktop Agent (ZIP)",
+            label="📥 Download Local Build (ZIP)",
             data=f,
             file_name="MalwareDefender_Agent.zip",
             mime="application/zip",
             help="Contains the standalone executable and the bundled ML models."
         )
-else:
-    st.sidebar.warning("Desktop agent build not found. Run `pyinstaller malware_defender.spec` to generate it.")
 
 # Expand supported types to match our Phase 7 modular dispatcher!
 supported_types = ['exe', 'dll', 'sys', 'zip']
