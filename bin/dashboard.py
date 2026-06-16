@@ -43,15 +43,8 @@ If you are viewing this on the cloud, download the compiled Windows executable d
 agent_zip_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dist", "MalwareDefender_Agent.zip")
 if os.path.exists(agent_zip_path):
     st.sidebar.markdown("---")
-    st.sidebar.write("*Local Development Build Detected:*")
-    with open(agent_zip_path, "rb") as f:
-        st.sidebar.download_button(
-            label="📥 Download Local Build (ZIP)",
-            data=f,
-            file_name="MalwareDefender_Agent.zip",
-            mime="application/zip",
-            help="Contains the standalone executable and the bundled ML models."
-        )
+    st.sidebar.success(f"✅ Local Build Detected: `{agent_zip_path}`")
+    st.sidebar.info("To avoid crashing Streamlit with a 260MB MemoryError, please manually navigate to the `dist/` folder to access the local build.")
 
 # Expand supported types to match our Phase 7 modular dispatcher!
 supported_types = ['exe', 'dll', 'sys', 'zip']
@@ -104,7 +97,21 @@ if uploaded_file is not None:
                     
                     # Create a clean table for the explanation
                     explain_data = result["explanation"]
-                    st.table([{"Security Category": item["feature"], "Impact Score": f"{item['impact']:.4f}"} for item in explain_data])
+                    
+                    formatted_data = []
+                    for item in explain_data:
+                        impact = item['impact']
+                        if impact > 0:
+                            interpretation = f"🔴 Suspicious (+{impact:.2f} towards Malware)"
+                        else:
+                            interpretation = f"🟢 Legitimate ({impact:.2f} towards Safe)"
+                            
+                        formatted_data.append({
+                            "Security Category": item["feature"],
+                            "AI Interpretation": interpretation
+                        })
+                        
+                    st.table(formatted_data)
                     
                 if "explanation_error" in result:
                     st.warning(f"Could not generate AI reasoning: {result['explanation_error']}")
