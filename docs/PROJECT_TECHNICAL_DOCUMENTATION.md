@@ -364,19 +364,54 @@ sequenceDiagram
 
 ## 20. Deployment Architecture
 
-* The `malware_defender.spec` file indicates PyInstaller is used to package the Python scripts, LightGBM binaries, and the Streamlit UI into a single standalone Windows Executable (`.exe`).
-* The `sys.frozen` check in `model_loader.py` and `logger.py` handles the path routing differences between running from source vs running as a compiled binary.
+The project employs a dual-deployment strategy: a local compiled agent for endpoint protection, and a cloud-hosted web dashboard for SOC analyst access.
 
-### Build Instructions
+### 1. Desktop Agent Build (Local Endpoint Deployment)
+The `aegis_sentinel.spec` file indicates PyInstaller is used to package the Python scripts, LightGBM binaries, and the Streamlit UI into a single standalone Windows Executable (`.exe`). The `sys.frozen` check in `model_loader.py` and `logger.py` handles the path routing differences between running from source vs running as a compiled binary.
 
-To build the project into a standalone executable, use PyInstaller. Ensure you are in the project root directory (`c:\Users\vaval\Desktop\Aegis-Sentinel`) and run:
+To build the project into a standalone executable, ensure you are in the project root directory and run:
 
 ```cmd
 pip install pyinstaller
 pyinstaller aegis_sentinel.spec --clean
 ```
 
-Upon completion, PyInstaller will create a `dist/aegis_sentinel/` directory containing the `aegis_sentinel.exe` and its bundled models. This folder can be zipped to `AegisSentinel_Agent.zip` and deployed to any Windows machine without requiring a Python installation on the target endpoint.
+Upon completion, PyInstaller will create a `dist/aegis_sentinel/` directory containing the `.exe` and its bundled models. This folder can be zipped to `AegisSentinel_Agent.zip` and deployed to any Windows machine via GitHub Releases.
+
+### 2. Cloud Dashboard (HuggingFace Spaces Deployment)
+The Streamlit Web Dashboard is deployed to HuggingFace Spaces. This platform was chosen over Streamlit Community Cloud due to its higher free memory allocation, which is necessary to safely load the 127MB Git LFS LightGBM model.
+
+#### The Git History Limit Problem
+HuggingFace enforces a strict 10MB limit on standard file uploads. Even though `ember_model_2018.txt` is tracked via Git LFS, the local Git history previously contained a large 15MB `scanner/model.pkl` file. Pushing the local repository directly to HuggingFace resulted in a rejected push because Git attempts to push the entire repository history.
+
+#### The "Orphan Branch" Bypass Strategy
+To deploy strictly the current working codebase without uploading the problematic Git history, an **Orphan Branch** approach is utilized. This creates a fresh branch with zero commit history:
+
+```bash
+git checkout --orphan deploy
+git add -A
+git commit -m "Deploy to HuggingFace"
+git push hf deploy:main --force
+git checkout main
+git branch -D deploy
+```
+
+#### YAML Frontmatter Configuration
+HuggingFace requires specific metadata to boot the environment. This is injected as YAML frontmatter into the very top of the `README.md` file:
+```yaml
+---
+title: Aegis Sentinel
+emoji: 🛡️
+colorFrom: red
+colorTo: red
+sdk: streamlit
+app_file: bin/dashboard.py
+pinned: false
+---
+```
+
+#### CI/CD Automation
+To automate the Orphan Branch bypass, a GitHub Actions workflow (`.github/workflows/hf_sync.yml`) was implemented. It intercepts pushes to the `main` branch, creates the temporary history-less branch, authenticates using an `HF_TOKEN` repository secret, and forcefully pushes the clean codebase to the HuggingFace remote server. This ensures that the GitHub repository and the HuggingFace live deployment remain perfectly synchronized.
 
 ---
 
