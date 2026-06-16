@@ -35,8 +35,10 @@ st.sidebar.markdown("""
 ### 📥 Download Latest Version
 If you are viewing this on the cloud, download the compiled Windows executable directly from our GitHub Releases:
 
-[**Download MalwareDefender_Agent.zip**](https://github.com/YOUR_USERNAME/MalwareDetect/releases/latest)
-""")
+<a href="https://github.com/YOUR_USERNAME/MalwareDetect/releases/latest/download/MalwareDefender_Agent.zip" target="_blank" style="display: inline-block; padding: 0.5em 1em; color: white; background-color: #FF4B4B; text-align: center; text-decoration: none; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 10px;">
+    📥 Download MalwareDefender_Agent.zip
+</a>
+""", unsafe_allow_html=True)
 
 agent_zip_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dist", "MalwareDefender_Agent.zip")
 if os.path.exists(agent_zip_path):
