@@ -31,10 +31,10 @@
    * **Data Involved**: Target executable, ML model.
 
 2. **Feature Name**: AI Explainability
-   * **Description**: Explain why the AI flagged a file.
+   * **Description**: Explain why the AI flagged a file using human-readable interpretations.
    * **User Interaction**: Add `--explain` flag or check UI box.
-   * **Backend Processing**: LightGBM native `pred_contrib` calculates feature impacts.
-   * **Data Involved**: Extracted feature vector, native SHAP values.
+   * **Backend Processing**: LightGBM native `pred_contrib` calculates feature impacts, which are then translated into plain English (e.g., `🔴 Suspicious` or `🟢 Legitimate`).
+   * **Data Involved**: Extracted feature vector, native SHAP values, formatted UI strings.
 
 3. **Feature Name**: Real-Time Background Protection
    * **Description**: Monitor configured directories for new files.
@@ -55,10 +55,10 @@
    * **Data Involved**: JSON configuration object.
 
 6. **Feature Name**: Desktop Agent Download
-   * **Description**: Allows users to download the compiled standalone background agent directly from the web dashboard.
+   * **Description**: Allows users to download the compiled standalone background agent globally without taxing cloud memory limits.
    * **User Interaction**: Click the download button in the Streamlit sidebar.
-   * **Backend Processing**: Serves the pre-compiled `MalwareDefender_Agent.zip` from the local `dist` folder.
-   * **Data Involved**: ZIP binary payload.
+   * **Backend Processing**: Uses an HTML anchor tag to redirect the download directly from GitHub Releases. If running locally, it detects the `dist` folder and provides the absolute path.
+   * **Data Involved**: External GitHub Release URL.
 
 ---
 
@@ -474,5 +474,5 @@ Upon completion, PyInstaller will create a `dist/malware_defender/` directory co
 
 ### `bin/dashboard.py`
 * **Purpose**: Streamlit dashboard.
-* **Key Methods**: Uses `tempfile.NamedTemporaryFile` to securely save uploaded browser chunks to disk before scanning. Implements `st.download_button` to serve the compiled Desktop Agent ZIP file from the sidebar.
-* **Interview Concept**: Web file handling, serving static binaries via Streamlit, temporary file lifecycle management and cleanup (`os.unlink` in a `finally` block).
+* **Key Methods**: Uses `tempfile.NamedTemporaryFile` to securely save uploaded browser chunks to disk before scanning. Implements a direct HTML download link to GitHub Releases to distribute the Desktop Agent, preventing `MemoryError` crashes that occur when attempting to serve large ZIP files natively through Streamlit in cloud environments.
+* **Interview Concept**: Web file handling, serving static binaries via cloud CDNs, memory lifecycle management, and translating raw ML SHAP values into UX-friendly human interpretations.

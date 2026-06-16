@@ -12,9 +12,9 @@ It extracts 2,351 microscopic features from Portable Executables (PE) and ZIP ar
 
 ## ✨ Key Features
 
-1. **AI Decision Explainability (SHAP)**: Doesn't just block a file—it tells you *why*. Using native LightGBM `pred_contrib`, the system mathematically proves which features tipped the model's decision boundary.
+1. **AI Decision Explainability (SHAP)**: Doesn't just block a file—it tells you *why*. Using native LightGBM `pred_contrib`, the system translates raw mathematical SHAP values into human-readable interpretations (e.g., `🔴 Suspicious` or `🟢 Legitimate`) to explain which features tipped the model's decision boundary.
 2. **Real-Time Background Protection**: A lightweight Watchdog daemon that monitors high-risk directories (like `Downloads` and `Desktop`) and instantly intercepts new files as they touch the disk.
-3. **Enterprise Web Dashboard**: A modern, dark-themed Streamlit UI for SOC analysts to manually investigate suspicious files and download the compiled Desktop Agent.
+3. **Enterprise Web Dashboard**: A modern, dark-themed Streamlit UI for SOC analysts to manually investigate suspicious files. Seamlessly integrates with GitHub Releases to distribute the massive compiled Desktop Agent globally without crashing cloud memory limits.
 4. **Memory-Safe Hashing Engine**: Generates SHA-256 hashes using 4MB chunking, ensuring the agent uses a flat memory profile even when scanning 10GB+ ISOs.
 5. **Air-Gapped Privacy**: Operates 100% locally. No files, hashes, or telemetry are sent to the cloud.
 
@@ -57,7 +57,15 @@ git lfs pull
 pip install -r requirements.txt
 ```
 
-### 2. Launch the Web Dashboard
+### 2. Build the Desktop Agent
+
+Compile the standalone `.exe` using the included PyInstaller spec file. Once compiled, you can upload `dist/MalwareDefender_Agent.zip` to your GitHub Releases page so it can be downloaded from the Web Dashboard.
+
+```bash
+pyinstaller malware_defender.spec
+```
+
+### 3. Launch the Web Dashboard
 
 To launch the Streamlit Web UI for manual file scanning:
 
@@ -65,7 +73,7 @@ To launch the Streamlit Web UI for manual file scanning:
 streamlit run bin/dashboard.py
 ```
 
-### 3. Start the Background Agent (Protect Mode)
+### 4. Start the Background Agent (Protect Mode)
 
 To enable real-time local endpoint protection:
 
@@ -73,7 +81,7 @@ To enable real-time local endpoint protection:
 python bin/cli.py protect
 ```
 
-### 4. Scan via Command Line
+### 5. Scan via Command Line
 
 Scan a single file and request AI decision reasoning:
 
