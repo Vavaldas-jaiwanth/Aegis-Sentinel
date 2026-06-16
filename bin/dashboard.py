@@ -9,11 +9,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from engine.scanner import scan_file
 
 # Page config for a modern, dark-themed enterprise look
-st.set_page_config(page_title="Enterprise Malware Scanner", page_icon="🛡️", layout="centered")
+st.set_page_config(page_title="Aegis Sentinel", page_icon="🛡️", layout="centered")
 
-st.title('🛡️ Enterprise AI Malware Scanner')
+st.title('🛡️ Aegis Sentinel')
 st.markdown('### Powered by the EMBER Machine Learning Engine')
-st.write('Upload an executable or archive file. Our state-of-the-art LightGBM AI model analyzes 2,351 microscopic features to instantly determine if the file contains malware, ransomware, or malicious payloads.')
+st.write('Upload an executable or archive file. Our state-of-the-art LightGBM ML model analyzes 2,351 microscopic features to instantly determine if the file contains malware, ransomware, or malicious payloads.')
 
 # Hide default Streamlit styling to make it look like a standalone app
 hide_streamlit_style = """
@@ -35,12 +35,12 @@ st.sidebar.markdown("""
 ### 📥 Download Latest Version
 If you are viewing this on the cloud, download the compiled Windows executable directly from our GitHub Releases:
 
-<a href="https://github.com/YOUR_USERNAME/MalwareDetect/releases/latest/download/MalwareDefender_Agent.zip" target="_blank" style="display: inline-block; padding: 0.5em 1em; color: white; background-color: #FF4B4B; text-align: center; text-decoration: none; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 10px;">
-    📥 Download MalwareDefender_Agent.zip
+<a href="https://github.com/YOUR_USERNAME/Aegis-Sentinel/releases/latest/download/AegisSentinel_Agent.zip" target="_blank" style="display: inline-block; padding: 0.5em 1em; color: white; background-color: #FF4B4B; text-align: center; text-decoration: none; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 10px;">
+    📥 Download AegisSentinel_Agent.zip
 </a>
 """, unsafe_allow_html=True)
 
-agent_zip_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dist", "MalwareDefender_Agent.zip")
+agent_zip_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dist", "AegisSentinel_Agent.zip")
 if os.path.exists(agent_zip_path):
     st.sidebar.markdown("---")
     st.sidebar.success(f"✅ Local Build Detected: `{agent_zip_path}`")

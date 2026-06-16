@@ -1,10 +1,10 @@
-# Enterprise AI Malware Scanner (Malware Defender) - Technical Documentation
+# Aegis Sentinel (Enterprise ML Malware Scanner) - Technical Documentation
 
 ## 1. Executive Summary
 
-* **Project Name**: Malware Defender (Enterprise AI Malware Scanner)
+* **Project Name**: Aegis Sentinel (Enterprise ML Malware Scanner)
 * **Project Purpose**: To provide a next-generation malware scanning engine that leverages machine learning for static analysis and real-time threat detection.
-* **Problem Statement**: Traditional signature-based antivirus solutions are ineffective against zero-day threats and polymorphic malware. This project solves this by using AI to detect malicious intent based on file heuristics and metadata.
+* **Problem Statement**: Traditional signature-based antivirus solutions are ineffective against zero-day threats and polymorphic malware. This project solves this by using ML to detect malicious intent based on file heuristics and metadata.
 * **Business Use Case**: Protecting enterprise endpoints from ransomware, trojans, and zero-day attacks without relying on internet-connected signature updates.
 * **Target Users**: Enterprise security teams, SOC analysts, and system administrators.
 * **Key Functionalities**: Single file scanning (CLI/UI), bulk folder scanning, background real-time protection (watchdog), AI decision explainability (LightGBM native SHAP), and caching for performance.
@@ -58,7 +58,7 @@
    * **Description**: Allows users to download the compiled standalone background agent globally without taxing cloud memory limits.
    * **User Interaction**: Click the download button in the Streamlit sidebar.
    * **Backend Processing**: Uses an HTML anchor tag to redirect the download directly from GitHub Releases. If running locally, it detects the `dist` folder and provides the absolute path.
-   * **Data Involved**: External GitHub Release URL.
+   * **Data Involved**: External GitHub Release URL (`AegisSentinel_Agent.zip`).
 
 ---
 
@@ -76,7 +76,7 @@
 ## 5. Complete Project Structure
 
 ```
-MalwareDetect/
+Aegis-Sentinel/
 ├── bin/dashboard.py                      # Presentation: Streamlit Web Dashboard
 ├── bin/cli.py                     # Presentation: Main CLI Entry Point
 ├── settings.json               # Configuration: User settings
@@ -369,14 +369,14 @@ sequenceDiagram
 
 ### Build Instructions
 
-To build the project into a standalone executable, use PyInstaller. Ensure you are in the project root directory (`c:\Users\vaval\Desktop\MalwareDetect`) and run:
+To build the project into a standalone executable, use PyInstaller. Ensure you are in the project root directory (`c:\Users\vaval\Desktop\Aegis-Sentinel`) and run:
 
 ```cmd
 pip install pyinstaller
-pyinstaller malware_defender.spec --clean
+pyinstaller aegis_sentinel.spec --clean
 ```
 
-Upon completion, PyInstaller will create a `dist/malware_defender/` directory containing the `malware_defender.exe` and its bundled models. This folder can be zipped and deployed to any Windows machine without requiring a Python installation on the target endpoint.
+Upon completion, PyInstaller will create a `dist/aegis_sentinel/` directory containing the `aegis_sentinel.exe` and its bundled models. This folder can be zipped to `AegisSentinel_Agent.zip` and deployed to any Windows machine without requiring a Python installation on the target endpoint.
 
 ---
 

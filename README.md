@@ -1,10 +1,10 @@
-# 🛡️ Enterprise AI Malware Scanner (Malware Defender)
+# 🛡️ Aegis Sentinel (Enterprise ML Malware Scanner)
 
 ![Build Status](https://img.shields.io/badge/build-passing-success)
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-A next-generation, AI-powered static malware analysis engine. **Malware Defender** leverages a highly optimized LightGBM model trained on the EMBER 2018 dataset to detect zero-day threats, ransomware, and malicious payloads without relying on outdated signature databases.
+A next-generation, ML-powered static malware analysis engine. **Aegis Sentinel** leverages a highly optimized LightGBM model trained on the EMBER 2018 dataset to detect zero-day threats, ransomware, and malicious payloads without relying on outdated signature databases.
 
 It extracts 2,351 microscopic features from Portable Executables (PE) and ZIP archives in real-time, executing high-speed inferences purely on the local endpoint.
 
@@ -51,18 +51,18 @@ MalwareDetect/
 Clone the repository and install the required dependencies. Note that this project uses **Git LFS** to pull down the massive 127MB ML model.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/MalwareDetect.git
-cd MalwareDetect
+git https://github.com/Vavaldas-jaiwanth/Aegis-Sentinel.git
+cd Aegis-Sentinel
 git lfs pull
 pip install -r requirements.txt
 ```
 
 ### 2. Build the Desktop Agent
 
-Compile the standalone `.exe` using the included PyInstaller spec file. Once compiled, you can upload `dist/MalwareDefender_Agent.zip` to your GitHub Releases page so it can be downloaded from the Web Dashboard.
+Compile the standalone `.exe` using the included PyInstaller spec file. Once compiled, you can upload `dist/AegisSentinel_Agent.zip` to your GitHub Releases page so it can be downloaded from the Web Dashboard.
 
 ```bash
-pyinstaller malware_defender.spec
+pyinstaller aegis_sentinel.spec
 ```
 
 ### 3. Launch the Web Dashboard
