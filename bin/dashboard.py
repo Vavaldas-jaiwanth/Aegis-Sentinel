@@ -25,26 +25,24 @@ hide_streamlit_style = """
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-st.markdown("---")
+# Desktop Agent Download Section (Moved from sidebar to main UI for better mobile responsiveness)
+with st.expander("💻 Download Desktop Agent (Real-Time Protection)", expanded=False):
+    st.write("Protect your local Windows endpoint in real-time with our background Watchdog daemon. No Python installation required.")
+    
+    st.markdown("""
+    <div style="background-color: #2b2b2b; padding: 20px; border-radius: 10px; border: 1px solid #444; text-align: center; margin-top: 10px; margin-bottom: 10px;">
+        <h3 style="margin-top: 0; color: white;">📥 Aegis Sentinel Standalone Agent</h3>
+        <p style="color: #bbb; font-size: 14px;">Download the compiled `.exe` directly from our GitHub Releases CDN.</p>
+        <a href="https://github.com/Vavaldas-jaiwanth/Aegis-Sentinel/releases/latest/download/AegisSentinel_Agent.zip" target="_blank" style="display: inline-block; padding: 12px 24px; color: white; background-color: #FF4B4B; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(255, 75, 75, 0.3);">
+            Download AegisSentinel_Agent.zip
+        </a>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Create sidebar for Desktop Agent download
-st.sidebar.title("💻 Desktop Agent")
-st.sidebar.write("Protect your local endpoint in real-time with our background agent.")
-
-st.sidebar.markdown("""
-### 📥 Download Latest Version
-If you are viewing this on the cloud, download the compiled Windows executable directly from our GitHub Releases:
-
-<a href="https://github.com/Vavaldas-jaiwanth/Aegis-Sentinel/releases/latest/download/AegisSentinel_Agent.zip" target="_blank" style="display: inline-block; padding: 0.5em 1em; color: white; background-color: #FF4B4B; text-align: center; text-decoration: none; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 10px;">
-    📥 Download AegisSentinel_Agent.zip
-</a>
-""", unsafe_allow_html=True)
-
-agent_zip_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dist", "AegisSentinel_Agent.zip")
-if os.path.exists(agent_zip_path):
-    st.sidebar.markdown("---")
-    st.sidebar.success(f"✅ Local Build Detected: `{agent_zip_path}`")
-    st.sidebar.info("To avoid crashing Streamlit with a 260MB MemoryError, please manually navigate to the `dist/` folder to access the local build.")
+    agent_zip_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dist", "AegisSentinel_Agent.zip")
+    if os.path.exists(agent_zip_path):
+        st.success(f"✅ **Local Build Detected:** `{agent_zip_path}`")
+        st.info("To avoid crashing Streamlit with a 260MB MemoryError, please manually navigate to the `dist/` folder to access your local build.")
 
 # Expand supported types to match our Phase 7 modular dispatcher!
 supported_types = ['exe', 'dll', 'sys', 'zip']
