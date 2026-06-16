@@ -35,7 +35,7 @@ st.sidebar.markdown("""
 ### 📥 Download Latest Version
 If you are viewing this on the cloud, download the compiled Windows executable directly from our GitHub Releases:
 
-<a href="https://github.com/YOUR_USERNAME/Aegis-Sentinel/releases/latest/download/AegisSentinel_Agent.zip" target="_blank" style="display: inline-block; padding: 0.5em 1em; color: white; background-color: #FF4B4B; text-align: center; text-decoration: none; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 10px;">
+<a href="https://github.com/Vavaldas-jaiwanth/Aegis-Sentinel/releases/latest/download/AegisSentinel_Agent.zip" target="_blank" style="display: inline-block; padding: 0.5em 1em; color: white; background-color: #FF4B4B; text-align: center; text-decoration: none; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 10px;">
     📥 Download AegisSentinel_Agent.zip
 </a>
 """, unsafe_allow_html=True)
