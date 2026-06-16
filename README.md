@@ -1,3 +1,13 @@
+---
+title: Aegis Sentinel
+emoji: 🛡️
+colorFrom: red
+colorTo: red
+sdk: streamlit
+app_file: bin/dashboard.py
+pinned: false
+---
+
 # 🛡️ Aegis Sentinel (Enterprise ML Malware Scanner)
 
 ![Build Status](https://img.shields.io/badge/build-passing-success)
